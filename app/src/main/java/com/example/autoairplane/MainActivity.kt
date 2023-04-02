@@ -4,11 +4,9 @@ package com.example.autoairplane
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.webkit.WebStorage
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentManager
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -45,26 +43,21 @@ class MainActivity : AppCompatActivity() {
         val dateBuilder = MaterialDatePicker.Builder.datePicker()
         val datePicker = dateBuilder.build()
 
-        val timePicker = MaterialTimePicker.Builder()
-            .setTimeFormat(TimeFormat.CLOCK_24H)
-            .setHour(12)
-            .setMinute(0)
-            .build()
 
         val dateBuilder2 = MaterialDatePicker.Builder.datePicker()
         val datePicker2 = dateBuilder2.build()
-
-        val timePicker2 = MaterialTimePicker.Builder()
-            .setTimeFormat(TimeFormat.CLOCK_24H)
-            .setHour(12)
-            .setMinute(0)
-            .build()
 
         dateTimeButton.setOnClickListener {
             datePicker.show(supportFragmentManager, "date_tag")
         }
 
         datePicker.addOnPositiveButtonClickListener {
+
+            val timePicker = MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setHour(12)
+                .setMinute(0)
+                .build()
             // update selected date in text field
             selectedStartDate=datePicker.headerText
             // show time picker
@@ -80,13 +73,20 @@ class MainActivity : AppCompatActivity() {
                 sharedPreferences.edit().putString("startTime",startTime).apply()
                 datePicker2.show(supportFragmentManager,"date_tag2")
             }
-        }
-        timePicker.addOnNegativeButtonClickListener{
-            val currentDateTime = dateTimeFormat.format(Date())
-            dateText.setText(currentDateTime)
+            timePicker.addOnNegativeButtonClickListener{
+                val currentDateTime = dateTimeFormat.format(Date())
+                dateText.setText(currentDateTime)
+            }
+
         }
 
         datePicker2.addOnPositiveButtonClickListener {
+
+            val timePicker2 = MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setHour(12)
+                .setMinute(0)
+                .build()
             // update selected date in text field
             selectedEndDate=datePicker2.headerText
             // show time picker
