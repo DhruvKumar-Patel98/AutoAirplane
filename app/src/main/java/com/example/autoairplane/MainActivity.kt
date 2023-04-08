@@ -3,28 +3,34 @@ package com.example.autoairplane
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.webkit.WebStorage
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import java.text.SimpleDateFormat
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
     lateinit var dateText:TextInputEditText
     lateinit var sharedPreferences:SharedPreferences
+    lateinit var durationTime:TextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         dateText = findViewById<TextInputEditText>(R.id.date_text)
         val dateTimeButton = findViewById<Button>(R.id.date_button)
         val resetTimeButton=findViewById<Button>(R.id.resetDate_button)
-        val durationTime = findViewById<TextInputEditText>(R.id.duration)
+        durationTime = findViewById<TextInputEditText>(R.id.duration)
         val doneButton = findViewById<Button>(R.id.Set_Timer)
         lateinit var startHour:String
         lateinit var startMinute:String
@@ -67,7 +73,14 @@ class MainActivity : AppCompatActivity() {
                 // update selected time in text field
                 startHour = timePicker.hour.toString().padStart(2, '0')
                 startMinute = timePicker.minute.toString().padStart(2, '0')
-                startTime=selectedStartDate + "  $startHour:$startMinute "
+
+                //MMM dd, yyyy
+                val inputFormat=SimpleDateFormat("MMM d, yyyy", Locale.US)
+                val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                val date = inputFormat.parse(selectedStartDate)
+                val startDate = dateFormat.format(date)
+
+                startTime=startDate + " $startHour:$startMinute"
                 dateText.setText(startTime)
 
                 sharedPreferences.edit().putString("startTime",startTime).apply()
@@ -95,10 +108,25 @@ class MainActivity : AppCompatActivity() {
                 // update selected time in text field
                 endHour = timePicker2.hour.toString().padStart(2, '0')
                 endMinute = timePicker2.minute.toString().padStart(2, '0')
-                endTime=selectedEndDate+" "+endHour+":"+endMinute
+
+                //MMM dd, yyyy
+                val inputFormat=SimpleDateFormat("MMM d, yyyy", Locale.US)
+                val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                val date = inputFormat.parse(selectedEndDate)
+                val endDate = dateFormat.format(date)
+
+                endTime=endDate+" "+endHour+":"+endMinute
                 dateText.setText(startTime+"\u2192"+endTime)
 
                 sharedPreferences.edit().putString("endTime", endTime).apply()
+                val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
+                val st = LocalDateTime.parse(startTime, formatter)
+                val et = LocalDateTime.parse(endTime, formatter)
+
+                val duration=Duration.between(st,et)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    durationTime.setText(duration.toHoursPart().toString()+"H "+duration.toMinutesPart().toString()+"M")
+                }
             }
             timePicker2.addOnCancelListener{
                 val savedDateTime = sharedPreferences.getString("dateTime", null)
@@ -125,6 +153,7 @@ class MainActivity : AppCompatActivity() {
            // val dateTimeFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
             val currentDateTime = dateTimeFormat.format(Date())
             dateText.setText(currentDateTime)
+            durationTime.setText("")
         }
     }
 
@@ -136,6 +165,12 @@ class MainActivity : AppCompatActivity() {
         val savedEndDateTime = sharedPreferences.getString("endTime", null)
         if (savedStartDateTime != null&&savedEndDateTime!=null) {
             dateText.setText(savedStartDateTime+"→"+savedEndDateTime)
+            val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
+            val st = LocalDateTime.parse(savedStartDateTime, formatter)
+            val et = LocalDateTime.parse(savedEndDateTime, formatter)
+
+            val duration=Duration.between(st,et)
+            durationTime.setText(duration.toHours().toString()+"H "+duration.toMinutes()+"M")
         }
         else{
             val dateTimeFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
